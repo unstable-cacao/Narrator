@@ -26,4 +26,37 @@ class ExceptionsTest extends TestCase
 		$subject = new Exceptions();
 		$subject->handle(new \Exception());
 	}
+	
+	public function test_handle_TypeHandlerSet_TypeHandlerInvoked()
+	{
+		$isCalled = false;
+		
+		$subject = new Exceptions();
+		$subject->byType(\Exception::class, function() use (&$isCalled) {$isCalled = true;});
+		$subject->handle(new \Exception());
+		
+		self::assertTrue($isCalled);
+	}
+	
+	public function test_handle_SubTypeHandlerSet_SubTypeHandlerInvoked()
+	{
+		$isCalled = false;
+		
+		$subject = new Exceptions();
+		$subject->bySubType(\Exception::class, function() use (&$isCalled) {$isCalled = true;});
+		$subject->handle(new \Exception());
+		
+		self::assertTrue($isCalled);
+	}
+	
+	public function test_handle_DefaultHandlerSet_DefaultHandlerInvoked()
+	{
+		$isCalled = false;
+		
+		$subject = new Exceptions();
+		$subject->defaultHandler(function() use (&$isCalled) {$isCalled = true;});
+		$subject->handle(new \Exception());
+		
+		self::assertTrue($isCalled);
+	}
 }
