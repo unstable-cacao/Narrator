@@ -5,7 +5,7 @@
         </whitelist>
     </filter>
     <testsuites>
-        <testsuite name="Skeleton">
+        <testsuite name="Narrator">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
