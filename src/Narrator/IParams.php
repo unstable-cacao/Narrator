@@ -38,10 +38,10 @@ interface IParams
 	public function bySubType(string $subType, $value): IParams;
 
 	/**
-	 * @param string $valueBySubType
+	 * @param array $valueBySubType
 	 * @return IParams
 	 */
-	public function bySubTypes(string $valueBySubType): IParams;
+	public function bySubTypes(array $valueBySubType): IParams;
 
 	/**
 	 * @param int $index
