@@ -21,7 +21,52 @@ class Params implements IParams
 	
 	/** @var callable|mixed|null */
 	private $last = null;
-
+	
+	
+	private function getSingleParameter(int $i, \ReflectionParameter $parameter)
+	{
+		$value = null;
+		$type = (string)$parameter->getType();
+		$class = $parameter->getClass();
+		
+		if (key_exists($i, $this->paramsByPosition))
+		{
+			$value = $this->paramsByPosition[$i];
+		}
+		else if ($type && key_exists($type, $this->paramsByType))
+		{
+			$value = $this->paramsByType[$type];
+		}
+		else if ($class)
+		{
+			$class = $class->getName();
+			
+			foreach ($this->paramsBySubType as $subType => $val)
+			{
+				if (is_subclass_of($class, $subType))
+				{
+					$value = $val;
+					break;
+				}
+			}
+		}
+		else if (key_exists($parameter->getName(), $this->paramsByName))
+		{
+			$value = $this->paramsByName[$parameter->getName()];
+		}
+		else
+		{
+			throw new CouldNotResolveParameterException($i, $parameter);
+		}
+		
+		return $this->getValue($value, $parameter);
+	}
+	
+	private function getValue($value, \ReflectionParameter $parameter)
+	{
+		return is_callable($value) ? $value($parameter) : $value;
+	}
+	
 
 	/**
 	 * @param string $name
@@ -135,50 +180,5 @@ class Params implements IParams
 		}
 		
 		return $result;
-	}
-	
-	
-	private function getSingleParameter(int $i, \ReflectionParameter $parameter)
-	{
-		$value = null;
-		$type = (string)$parameter->getType();
-		$class = $parameter->getClass();
-		
-		if (key_exists($i, $this->paramsByPosition))
-		{
-			$value = $this->paramsByPosition[$i];
-		}
-		else if ($type && key_exists($type, $this->paramsByType))
-		{
-			$value = $this->paramsByType[$type];
-		}
-		else if ($class)
-		{
-			$class = $class->getName();
-			
-			foreach ($this->paramsBySubType as $subType => $val) 
-			{
-				if (is_subclass_of($class, $subType))
-				{
-					$value = $val;
-					break;
-				}
-			}
-		}
-		else if (key_exists($parameter->getName(), $this->paramsByName))
-		{
-			$value = $this->paramsByName[$parameter->getName()];
-		}
-		else
-		{
-			throw new CouldNotResolveParameterException($i, $parameter);
-		}
-		
-		return $this->getValue($value, $parameter);
-	}
-	
-	private function getValue($value, \ReflectionParameter $parameter)
-	{
-		return is_callable($value) ? $value($parameter) : $value;
 	}
 }
