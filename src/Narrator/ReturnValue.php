@@ -104,10 +104,11 @@ class ReturnValue implements IReturnValue
 		else
 		{
 			$type = gettype($value);
-			$class = get_class($value);
 			
-			if ($class)
+			if ($type == 'object')
 			{
+				$class = get_class($value);
+				
 				if (key_exists($class, $this->returnByType))
 					return $this->getValue($this->returnByType[$class], $value);
 				
