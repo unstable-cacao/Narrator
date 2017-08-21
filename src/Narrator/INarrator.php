@@ -7,7 +7,8 @@ interface INarrator
 	public function __clone();
 	public function __invoke(callable $target, ...$params);
 	public function params(): IParams;
-	public function exceptions(): IParams;
+	public function exceptions(): IExceptions;
+	public function returnValue(): IReturnValue;
 
 	/**
 	 * Called before the target callback is invoked.
@@ -29,5 +30,4 @@ interface INarrator
 	 * @return INarrator
 	 */
 	public function always(callable $callback): INarrator;
-	
 }
