@@ -2,33 +2,70 @@
 namespace Narrator;
 
 
+use Narrator\Exceptions\CallbackExpectedException;
+
 class Narrator implements INarrator
 {
 	/** @var IParams */
-	private $params;
+	private $params = null;
 	
 	/** @var IExceptions */
-	private $exceptions;
+	private $exceptions = null;
 	
 	/** @var IReturnValue */
-	private $returnValue;
+	private $returnValue = null;
+
+	/** @var callable|null */
+	private $callback = null;
+	
+	/** @var callable|null */
+	private $before = null;
+	
+	/** @var callable|null */
+	private $after = null;
+	
+	/** @var callable|null */
+	private $always = null;
 	
 	
-	public function __construct()
+	private function getCallback(?callable $callback = null): callable 
+	{
+		if ($callback)
+			return $callback;
+		
+		if ($this->callback)
+			return $this->callback;
+		
+		throw new CallbackExpectedException();
+	}
+	
+	private function invokeFunction(?callable $callback): void
+	{
+		if ($callback)
+		{
+			$callback();
+		}
+	}
+	
+	
+	public function __construct(callable $callback = null)
 	{
 		$this->params = new Params();
 		$this->exceptions = new Exceptions();
 		$this->returnValue = new ReturnValue();
+		$this->callback = $callback;
 	}
 	
 	public function __clone()
 	{
-		// TODO: Implement __clone() method.
+		$this->params = clone $this->params;
+		$this->exceptions = clone $this->exceptions;
+		$this->returnValue = clone $this->returnValue;
 	}
 	
-	public function __invoke(callable $target, ...$params)
+	public function __invoke()
 	{
-		// TODO: Implement __invoke() method.
+		return $this->invoke();
 	}
 	
 	public function params(): IParams
@@ -53,7 +90,8 @@ class Narrator implements INarrator
 	 */
 	public function before(callable $callback): INarrator
 	{
-		// TODO: Implement before() method.
+		$this->before = $callback;
+		return $this;
 	}
 	
 	/**
@@ -63,7 +101,8 @@ class Narrator implements INarrator
 	 */
 	public function after(callable $callback): INarrator
 	{
-		// TODO: Implement after() method.
+		$this->after = $callback;
+		return $this;
 	}
 	
 	/**
@@ -73,6 +112,44 @@ class Narrator implements INarrator
 	 */
 	public function always(callable $callback): INarrator
 	{
-		// TODO: Implement always() method.
+		$this->always = $callback;
+		return $this;
+	}
+
+	/**
+	 * @param callable|null $callback
+	 * @return mixed
+	 */
+	public function invoke(callable $callback = null)
+	{
+		$callback = $this->getCallback($callback);
+		$reflection = new \ReflectionFunction($callback);
+		
+		try
+		{
+			$this->invokeFunction($this->before);
+			
+			$params = $this->params->get($reflection->getParameters());
+			$returnedValue = $callback($params);
+			$result = $this->returnValue->get($returnedValue);
+			
+			$this->invokeFunction($this->after);
+			
+			return $result;
+		}
+		catch (\Throwable $e)
+		{
+			return $this->exceptions->handle($e);
+		}
+		finally
+		{
+			$this->invokeFunction($this->always);
+		}
+	}
+
+	public function setCallback(callable $callback): INarrator
+	{
+		$this->callback = $callback;
+		return $this;
 	}
 }

@@ -5,10 +5,19 @@ namespace Narrator;
 interface INarrator
 {
 	public function __clone();
-	public function __invoke(callable $target, ...$params);
+	public function __invoke();
+
+	/**
+	 * @param callable|null $callback
+	 * @return mixed
+	 */
+	public function invoke(callable $callback = null);
+	
 	public function params(): IParams;
 	public function exceptions(): IExceptions;
 	public function returnValue(): IReturnValue;
+	
+	public function setCallback(callable $callback): INarrator;
 
 	/**
 	 * Called before the target callback is invoked.
