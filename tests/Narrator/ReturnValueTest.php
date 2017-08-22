@@ -23,6 +23,15 @@ class ReturnValueTest extends TestCase
 		self::assertEquals($subject, $subject->float(1));
 		self::assertEquals($subject, $subject->null(1));
 	}
+
+	/**
+	 * @expectedException \Narrator\Exceptions\NotAScalarException
+	 */
+	public function test_get_ValueObjectByValue_ExceptionThrown()
+	{
+		$subject = new ReturnValue();
+		$subject->byValue(new \stdClass(), 1);
+	}
 	
 	public function test_get_ValueScalarByValue_ValueReturned()
 	{
@@ -88,7 +97,7 @@ class ReturnValueTest extends TestCase
 		self::assertEquals(1, $subject->get(new ReturnValueTestHelper_B()));
 	}
 	
-	public function test_get_ValueNullByValue_ValueReturned()
+	public function test_get_ValueNull_ValueReturned()
 	{
 		$subject = new ReturnValue();
 		$subject->null(1);
@@ -96,7 +105,7 @@ class ReturnValueTest extends TestCase
 		self::assertEquals(1, $subject->get(null));
 	}
 	
-	public function test_get_ValueNullByValue_CallbackValueReturned()
+	public function test_get_ValueNull_CallbackValueReturned()
 	{
 		$subject = new ReturnValue();
 		$subject->null(function() {return 1;});
@@ -156,7 +165,7 @@ class ReturnValueTest extends TestCase
 	{
 		$subject = new ReturnValue();
 		
-		self::assertNull($subject->get(null));
+		self::assertEquals(2, $subject->get(2));
 	}
 }
 

@@ -5,7 +5,7 @@ namespace Narrator;
 interface IReturnValue
 {
 	/**
-	 * @param int|float|string|bool|null $value
+	 * @param int|float|string|bool $value
 	 * @param callable|mixed $returnValue
 	 * @return IReturnValue
 	 */

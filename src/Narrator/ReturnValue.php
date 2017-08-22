@@ -2,27 +2,26 @@
 namespace Narrator;
 
 
+use Narrator\Exceptions\NotAScalarException;
+
 class ReturnValue implements IReturnValue
 {
 	private const OBJECT 	= 'object';
 	private const INT 		= 'integer';
 	private const BOOL 		= 'boolean';
 	private const FLOAT 	= 'double';
-	private const NULL 		= 'NULL';
 	private const STRING	= 'string';
 	
 	private const TYPE_MAP = [
 		'int' 	=> self::INT,
 		'bool' 	=> self::BOOL,
-		'float' => self::FLOAT,
-		'null'	=> self::NULL
+		'float' => self::FLOAT
 	];
 		
 	private const SCALAR = [
 		self::INT,
 		self::BOOL,
 		self::FLOAT,
-		self::NULL,
 		self::STRING
 	];
 	
@@ -38,6 +37,9 @@ class ReturnValue implements IReturnValue
 	
 	/** @var callable|mixed|null */
 	private $default = null;
+	
+	/** @var callable|mixed|null */
+	private $null = null;
 	
 	
 	/**
@@ -116,23 +118,16 @@ class ReturnValue implements IReturnValue
 	}
 	
 	/**
-	 * @param int|float|string|bool|null $value
+	 * @param int|float|string|bool $value
 	 * @param callable|mixed $returnValue
 	 * @return IReturnValue
 	 */
 	public function byValue($value, $returnValue): IReturnValue
 	{
-		if (is_null($value))
-		{
-			$this->returnByValue[self::NULL] = $returnValue;
-		}
-		else
-		{
-			if (!in_array(gettype($value), self::SCALAR))
-				throw new \Exception("Only scalar values or null are allowed.");
+		if (!in_array(gettype($value), self::SCALAR))
+				throw new NotAScalarException();
 			
 			$this->returnByValue[$value] = $returnValue;
-		}
 		
 		return $this;
 	}
@@ -179,7 +174,8 @@ class ReturnValue implements IReturnValue
 	 */
 	public function null($value): IReturnValue
 	{
-		return $this->byValue(null, $value);
+		$this->null = $value;
+		return $this;
 	}
 	
 	/**
@@ -192,14 +188,9 @@ class ReturnValue implements IReturnValue
 		
 		if (is_null($value))
 		{
-			if (key_exists(self::NULL, $this->returnByValue))
+			if ($this->null)
 			{
-				return $this->getValue($this->returnByValue[self::NULL], $value);
-			}
-			
-			if (key_exists(self::NULL, $this->returnByType))
-			{
-				return $this->getValue($this->returnByValue[self::NULL], $value);
+				return $this->getValue($this->null, $value);
 			}
 		}
 		else if (in_array($type, self::SCALAR) && key_exists($value, $this->returnByValue))
