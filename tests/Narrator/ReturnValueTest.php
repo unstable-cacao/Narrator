@@ -57,6 +57,25 @@ class ReturnValueTest extends TestCase
 		self::assertEquals(1, $subject->get(2));
 	}
 	
+	public function test_get_ValueIntByType_ValueReturned()
+	{
+		$subject = new ReturnValue();
+		$subject->byType('int', 1);
+		
+		self::assertEquals(1, $subject->get(2));
+	}
+	
+	public function test_get_ValuesByTypes_ValueReturned()
+	{
+		$subject = new ReturnValue();
+		$subject->byTypes([
+			'int' 		=> 1,
+			'string' 	=> 'test'
+		]);
+		
+		self::assertEquals(1, $subject->get(2));
+	}
+	
 	public function test_get_ValueScalarByType_CallbackValueReturned()
 	{
 		$subject = new ReturnValue();
