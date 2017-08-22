@@ -5,6 +5,43 @@ namespace Narrator;
 interface IReturnValue
 {
 	/**
+	 * @param int|float|string|bool|null $value
+	 * @param callable|mixed $returnValue
+	 * @return IReturnValue
+	 */
+	public function byValue($value, $returnValue): IReturnValue;
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function int($value): IReturnValue;
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function float($value): IReturnValue;
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function string($value): IReturnValue;
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function bool($value): IReturnValue;
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function null($value): IReturnValue;
+	
+	/**
 	 * @param string $type
 	 * @param callable|mixed $value
 	 * @return IReturnValue
@@ -35,10 +72,4 @@ interface IReturnValue
 	 * @return IReturnValue
 	 */
 	public function defaultValue($value): IReturnValue;
-	
-	/**
-	 * @param callable|mixed $value
-	 * @return IReturnValue
-	 */
-	public function onNull($value): IReturnValue;
 }

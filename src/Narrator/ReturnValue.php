@@ -4,17 +4,32 @@ namespace Narrator;
 
 class ReturnValue implements IReturnValue
 {
+	private const OBJECT 	= 'object';
+	private const INT 		= 'integer';
+	private const BOOL 		= 'boolean';
+	private const FLOAT 	= 'double';
+	private const NULL 		= 'NULL';
+	private const STRING	= 'string';
+	
+	private const TYPE_MAP = [
+		'int' 	=> self::INT,
+		'bool' 	=> self::BOOL,
+		'float' => self::FLOAT,
+		'null'	=> self::NULL
+	];
+	
+	
 	/** @var array */
 	private $returnByType = [];
 	
 	/** @var array */
 	private $returnBySubType = [];
 	
-	/** @var callable|mixed|null */
-	private $default = null;
+	/** @var array */
+	private $returnByValue = [];
 	
 	/** @var callable|mixed|null */
-	private $onNull = null;
+	private $default = null;
 	
 	
 	/**
@@ -35,7 +50,15 @@ class ReturnValue implements IReturnValue
 	 */
 	public function byType(string $type, $value): IReturnValue
 	{
-		$this->returnByType[$type] = $value;
+		if (key_exists($type, self::TYPE_MAP))
+		{
+			$this->returnByType[self::TYPE_MAP[$type]] = $value;
+		}
+		else
+		{
+			$this->returnByType[$type] = $value;
+		}
+		
 		return $this;
 	}
 	
@@ -45,7 +68,11 @@ class ReturnValue implements IReturnValue
 	 */
 	public function byTypes(array $valueByType): IReturnValue
 	{
-		$this->returnByType = array_merge($this->returnByType, $valueByType);
+		foreach ($valueByType as $type => $value) 
+		{
+			$this->byType($type, $value);
+		}
+		
 		return $this;
 	}
 	
@@ -81,13 +108,70 @@ class ReturnValue implements IReturnValue
 	}
 	
 	/**
+	 * @param int|float|string|bool|null $value
+	 * @param callable|mixed $returnValue
+	 * @return IReturnValue
+	 */
+	public function byValue($value, $returnValue): IReturnValue
+	{
+		if (is_null($value))
+		{
+			$this->returnByValue[self::NULL] = $returnValue;
+		}
+		else
+		{
+			if (!in_array(gettype($value), self::TYPE_MAP))
+				throw new \Exception("Only scalar values or null are allowed.");
+			
+			$this->returnByValue[$value] = $returnValue;
+		}
+		
+		return $this;
+	}
+	
+	/**
 	 * @param callable|mixed $value
 	 * @return IReturnValue
 	 */
-	public function onNull($value): IReturnValue
+	public function int($value): IReturnValue
 	{
-		$this->onNull = $value;
-		return $this;
+		return $this->byType(self::INT, $value);
+	}
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function float($value): IReturnValue
+	{
+		return $this->byType(self::FLOAT, $value);
+	}
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function string($value): IReturnValue
+	{
+		return $this->byType(self::STRING, $value);
+	}
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function bool($value): IReturnValue
+	{
+		return $this->byType(self::BOOL, $value);
+	}
+	
+	/**
+	 * @param callable|mixed $value
+	 * @return IReturnValue
+	 */
+	public function null($value): IReturnValue
+	{
+		return $this->byValue(self::NULL, $value);
 	}
 	
 	/**
@@ -96,16 +180,17 @@ class ReturnValue implements IReturnValue
 	 */
 	public function get($value)
 	{
-		if (is_null($value))
+		$type = gettype($value);
+		
+		if ((is_null($value) || in_array($type, self::TYPE_MAP)) && key_exists($value, $this->returnByValue))
 		{
-			if ($this->onNull)
-				return $this->getValue($this->onNull, $value);
+			return $this->getValue($this->returnByValue[$value], $value);
 		}
 		else
 		{
 			$type = gettype($value);
 			
-			if ($type == 'object')
+			if ($type == self::OBJECT)
 			{
 				$class = get_class($value);
 				
