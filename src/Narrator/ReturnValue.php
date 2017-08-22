@@ -17,6 +17,14 @@ class ReturnValue implements IReturnValue
 		'float' => self::FLOAT,
 		'null'	=> self::NULL
 	];
+		
+	private const SCALAR = [
+		self::INT,
+		self::BOOL,
+		self::FLOAT,
+		self::NULL,
+		self::STRING
+	];
 	
 	
 	/** @var array */
@@ -120,7 +128,7 @@ class ReturnValue implements IReturnValue
 		}
 		else
 		{
-			if (!in_array(gettype($value), self::TYPE_MAP))
+			if (!in_array(gettype($value), self::SCALAR))
 				throw new \Exception("Only scalar values or null are allowed.");
 			
 			$this->returnByValue[$value] = $returnValue;
@@ -171,7 +179,7 @@ class ReturnValue implements IReturnValue
 	 */
 	public function null($value): IReturnValue
 	{
-		return $this->byValue(self::NULL, $value);
+		return $this->byValue(null, $value);
 	}
 	
 	/**
@@ -182,14 +190,12 @@ class ReturnValue implements IReturnValue
 	{
 		$type = gettype($value);
 		
-		if ((is_null($value) || in_array($type, self::TYPE_MAP)) && key_exists($value, $this->returnByValue))
+		if (in_array($type, self::SCALAR) && key_exists($value, $this->returnByValue))
 		{
 			return $this->getValue($this->returnByValue[$value], $value);
 		}
 		else
 		{
-			$type = gettype($value);
-			
 			if ($type == self::OBJECT)
 			{
 				$class = get_class($value);
