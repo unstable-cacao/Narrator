@@ -190,7 +190,19 @@ class ReturnValue implements IReturnValue
 	{
 		$type = gettype($value);
 		
-		if (in_array($type, self::SCALAR) && key_exists($value, $this->returnByValue))
+		if (is_null($value))
+		{
+			if (key_exists(self::NULL, $this->returnByValue))
+			{
+				return $this->getValue($this->returnByValue[self::NULL], $value);
+			}
+			
+			if (key_exists(self::NULL, $this->returnByType))
+			{
+				return $this->getValue($this->returnByValue[self::NULL], $value);
+			}
+		}
+		else if (in_array($type, self::SCALAR) && key_exists($value, $this->returnByValue))
 		{
 			return $this->getValue($this->returnByValue[$value], $value);
 		}
@@ -201,23 +213,31 @@ class ReturnValue implements IReturnValue
 				$class = get_class($value);
 				
 				if (key_exists($class, $this->returnByType))
+				{
 					return $this->getValue($this->returnByType[$class], $value);
+				}
 				
 				foreach ($this->returnBySubType as $subType => $returnValue)
 				{
 					if ($value instanceof $subType)
+					{
 						return $this->getValue($this->returnBySubType[$subType], $value);
+					}
 				}
 			}
 			else
 			{
 				if (key_exists($type, $this->returnByType))
+				{
 					return $this->getValue($this->returnByType[$type], $value);
+				}
 			}
 		}
 		
 		if ($this->default)
+		{
 			return $this->getValue($this->default, $value);
+		}
 		
 		return $value;
 	}
