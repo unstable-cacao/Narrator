@@ -6,7 +6,6 @@ use Narrator\Exceptions\NotAScalarException;
 
 class ReturnValue implements IReturnValue
 {
-	private const OBJECT 	= 'object';
 	private const INT 		= 'integer';
 	private const BOOL 		= 'boolean';
 	private const FLOAT 	= 'double';
@@ -16,13 +15,6 @@ class ReturnValue implements IReturnValue
 		'int' 	=> self::INT,
 		'bool' 	=> self::BOOL,
 		'float' => self::FLOAT
-	];
-		
-	private const SCALAR = [
-		self::INT,
-		self::BOOL,
-		self::FLOAT,
-		self::STRING
 	];
 	
 	
@@ -124,7 +116,7 @@ class ReturnValue implements IReturnValue
 	 */
 	public function byValue($value, $returnValue): IReturnValue
 	{
-		if (!in_array(gettype($value), self::SCALAR))
+		if (!is_scalar($value))
 				throw new NotAScalarException();
 			
 			$this->returnByValue[$value] = $returnValue;
@@ -184,8 +176,6 @@ class ReturnValue implements IReturnValue
 	 */
 	public function get($value)
 	{
-		$type = gettype($value);
-		
 		if (is_null($value))
 		{
 			if ($this->null)
@@ -193,13 +183,13 @@ class ReturnValue implements IReturnValue
 				return $this->getValue($this->null, $value);
 			}
 		}
-		else if (in_array($type, self::SCALAR) && key_exists($value, $this->returnByValue))
+		else if (is_scalar($value) && key_exists($value, $this->returnByValue))
 		{
 			return $this->getValue($this->returnByValue[$value], $value);
 		}
 		else
 		{
-			if ($type == self::OBJECT)
+			if (is_object($value))
 			{
 				$class = get_class($value);
 				
@@ -218,6 +208,8 @@ class ReturnValue implements IReturnValue
 			}
 			else
 			{
+				$type = gettype($value);
+				
 				if (key_exists($type, $this->returnByType))
 				{
 					return $this->getValue($this->returnByType[$type], $value);
