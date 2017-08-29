@@ -4,6 +4,7 @@ namespace Narrator;
 
 use Narrator\Exceptions\NotAScalarException;
 
+
 class ReturnValue implements IReturnValue
 {
 	private const INT 		= 'integer';

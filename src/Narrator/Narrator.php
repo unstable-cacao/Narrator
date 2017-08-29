@@ -4,6 +4,7 @@ namespace Narrator;
 
 use Narrator\Exceptions\CallbackExpectedException;
 
+
 class Narrator implements INarrator
 {
 	/** @var IParams */
@@ -130,7 +131,7 @@ class Narrator implements INarrator
 			$this->invokeFunction($this->before);
 			
 			$params = $this->params->get($reflection->getParameters());
-			$returnedValue = $callback($params);
+			$returnedValue = $reflection->invokeArgs($params);
 			$result = $this->returnValue->get($returnedValue);
 			
 			$this->invokeFunction($this->after);

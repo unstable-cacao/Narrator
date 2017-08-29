@@ -14,7 +14,6 @@ class NarratorTest extends TestCase
 		self::assertEquals($subject, $subject->after(function () {}));
 		self::assertEquals($subject, $subject->before(function () {}));
 		self::assertEquals($subject, $subject->always(function () {}));
-		self::assertEquals($subject, $subject->after(function () {}));
 		self::assertEquals($subject, $subject->setCallback(function () {}));
 	}
 	
@@ -94,7 +93,7 @@ class NarratorTest extends TestCase
 		self::assertTrue($isCalled);
 	}
 	
-	public function test_invoke_CallbackCalled()
+	public function test_invoke_CallbackFromParamCalled()
 	{
 		$subject = new Narrator();
 		$isCalled = false;
@@ -104,10 +103,94 @@ class NarratorTest extends TestCase
 		self::assertTrue($isCalled);
 	}
 	
+	public function test_invoke_CallbackFromMemberCalled()
+	{
+		$subject = new Narrator();
+		$isCalled = false;
+		$subject->setCallback(function() use (&$isCalled) { $isCalled = true; });
+		
+		$subject->invoke();
+		
+		self::assertTrue($isCalled);
+	}
+	
+	public function test_invoke_ExceptionHandlerSet_ExceptionHandled()
+	{
+		$subject = new Narrator();
+		$isCalled = false;
+		$subject->exceptions()->defaultHandler(function() use (&$isCalled) { $isCalled = true; });
+		$subject->invoke(function() {throw new \Exception();});
+		
+		self::assertTrue($isCalled);
+	}
+	
+	/**
+	 * @expectedException \Exception
+	 */
+	public function test_invoke_ExceptionHandlerNotSet_ExceptionThrown()
+	{
+		$subject = new Narrator();
+		
+		$subject->invoke(function() {throw new \Exception();});
+	}
+	
+	/**
+	 * @expectedException \Narrator\Exceptions\CouldNotResolveParameterException
+	 */
+	public function test_invoke_NoParamHandler_ExceptionThrown()
+	{
+		$subject = new Narrator();
+		
+		$subject->invoke(function(int $i) {});
+	}
+	
+	public function test_invoke_ParamHandlerSet_ParamsPassedToCallback()
+	{
+		$subject = new Narrator();
+		$gotParams = false;
+		$subject->params()->byType('int', 1);
+		
+		$subject->invoke(function(int $i) use (&$gotParams)
+		{
+			if ($i == 1) $gotParams = true;
+		});
+		
+		self::assertTrue($gotParams);
+	}
+	
 	public function test_invoke_ReturnParameterReturned()
 	{
 		$subject = new Narrator();
 		
 		self::assertEquals(1, $subject->invoke(function() { return 1; }));
+	}
+	
+	public function test_invoke_ReturnValuePassedToReturnHandler()
+	{
+		$subject = new Narrator();
+		$subject->returnValue()->defaultValue(2);
+		
+		self::assertEquals(2, $subject->invoke(function() { return 1; }));
+	}
+	
+	public function test__invoke_CallsInvoke()
+	{
+		$subject = new Narrator();
+		$isCalled = false;
+		$subject->setCallback(function() use (&$isCalled) { $isCalled = true; });
+		$subject();
+		
+		self::assertTrue($isCalled);
+	}
+	
+	public function test__clone_ClonesMembers()
+	{
+		$subject = new Narrator();
+		$subject->returnValue()->defaultValue(2);
+		
+		$cloned = clone $subject;
+		$cloned->returnValue()->defaultValue(3);
+		
+		self::assertEquals(2, $subject->invoke(function() { return 1; }));
 	}
 }
