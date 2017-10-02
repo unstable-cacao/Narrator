@@ -69,6 +69,7 @@ class Narrator implements INarrator
 		return $this->invoke();
 	}
 	
+	
 	public function params(): IParams
 	{
 		return $this->params;
@@ -77,6 +78,18 @@ class Narrator implements INarrator
 	public function exceptions(): IExceptions
 	{
 		return $this->exceptions;
+	}
+
+	/**
+	 * @param string|mixed|array $item
+	 * @return INarrator|static
+	 */
+	public function addSetupClass($item): INarrator
+	{
+		$this->params->addSetup($item);
+		$this->exceptions->addSetup($item);
+		$this->returnValue->addSetup($item);
+		return $this;
 	}
 	
 	public function returnValue(): IReturnValue

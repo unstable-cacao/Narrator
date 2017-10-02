@@ -118,9 +118,9 @@ class ReturnValue implements IReturnValue
 	public function byValue($value, $returnValue): IReturnValue
 	{
 		if (!is_scalar($value))
-				throw new NotAScalarException();
-			
-			$this->returnByValue[$value] = $returnValue;
+			throw new NotAScalarException();
+		
+		$this->returnByValue[$value] = $returnValue;
 		
 		return $this;
 	}
