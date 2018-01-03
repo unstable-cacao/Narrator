@@ -79,18 +79,6 @@ class Narrator implements INarrator
 	{
 		return $this->exceptions;
 	}
-
-	/**
-	 * @param string|mixed|array $item
-	 * @return INarrator|static
-	 */
-	public function addSetupClass($item): INarrator
-	{
-		$this->params->addSetup($item);
-		$this->exceptions->addSetup($item);
-		$this->returnValue->addSetup($item);
-		return $this;
-	}
 	
 	public function returnValue(): IReturnValue
 	{

@@ -61,10 +61,4 @@ interface IParams
 	 * @return IParams
 	 */
 	public function last($value): IParams;
-
-	/**
-	 * @param string|mixed|array $item
-	 * @return IExceptions
-	 */
-	public function addSetup($item): IExceptions;
 }

@@ -72,10 +72,4 @@ interface IReturnValue
 	 * @return IReturnValue
 	 */
 	public function defaultValue($value): IReturnValue;
-
-	/**
-	 * @param string|mixed|array $item
-	 * @return IExceptions
-	 */
-	public function addSetup($item): IExceptions;
 }
