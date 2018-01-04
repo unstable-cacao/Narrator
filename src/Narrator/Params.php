@@ -22,16 +22,19 @@ class Params implements IParams
 	/** @var callable|mixed|null */
 	private $last = null;
 	
+	/** @var callable[] */
+	private $callbacks = [];
 	
-	private function getSingleParameter(int $i, \ReflectionParameter $parameter)
+	
+	private function getSingleParameter(\ReflectionParameter $parameter)
 	{
 		$value = null;
 		$type = (string)$parameter->getType();
 		$class = $parameter->getClass();
 		
-		if (key_exists($i, $this->paramsByPosition))
+		if (key_exists($parameter->getPosition(), $this->paramsByPosition))
 		{
-			$value = $this->paramsByPosition[$i];
+			$value = $this->paramsByPosition[$parameter->getPosition()];
 		}
 		else if ($type && key_exists($type, $this->paramsByType))
 		{
@@ -56,7 +59,16 @@ class Params implements IParams
 		}
 		else
 		{
-			throw new CouldNotResolveParameterException($i, $parameter);
+			foreach ($this->callbacks as $callback)
+			{
+				$isFound = true;
+				$result = $callback($parameter, $isFound);
+				
+				if ($isFound)
+					return $result;
+			}
+				
+			throw new CouldNotResolveParameterException($parameter);
 		}
 		
 		return $this->getValue($value, $parameter);
@@ -162,6 +174,16 @@ class Params implements IParams
 		return $this;
 	}
 	
+	/**
+	 * @param callable $callback
+	 * @return IParams
+	 */
+	public function addCallback(callable $callback): IParams
+	{
+		$this->callbacks[] = $callback;
+		return $this;
+	}
+	
 	public function get(array $parameters): array 
 	{
 		$result = [];
@@ -175,7 +197,7 @@ class Params implements IParams
 			}
 			else
 			{
-				$result[] = $this->getSingleParameter($i, $parameters[$i]);
+				$result[] = $this->getSingleParameter($parameters[$i]);
 			}
 		}
 		

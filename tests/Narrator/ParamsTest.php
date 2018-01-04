@@ -20,6 +20,7 @@ class ParamsTest extends TestCase
 		self::assertEquals($subject, $subject->atPosition(0, 1));
 		self::assertEquals($subject, $subject->first('a'));
 		self::assertEquals($subject, $subject->last('a'));
+		self::assertEquals($subject, $subject->addCallback(function() {}));
 	}
 	
 	public function test_get_EmptyArrayPassed_EmptyArrayReturned()
@@ -329,6 +330,28 @@ class ParamsTest extends TestCase
 		};
 		
 		self::assertEquals(4, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
+	}
+	
+	
+	public function test_get_CallbackSetup_CallbackInvoked()
+	{
+		$isCalled = false;
+		
+		$subject = new Params();
+		$n = new class
+		{
+			public function a($i) {}
+		};
+		
+		$subject->addCallback(function () 
+			use (&$isCalled)
+			{
+				$isCalled = true;
+			});
+		
+		$subject->get([new \ReflectionParameter([$n, 'a'], 'i')]);
+		
+		self::assertTrue($isCalled);
 	}
 }
 

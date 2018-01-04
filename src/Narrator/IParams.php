@@ -61,4 +61,10 @@ interface IParams
 	 * @return IParams
 	 */
 	public function last($value): IParams;
+	
+	/**
+	 * @param callable $callback
+	 * @return IParams
+	 */
+	public function addCallback(callable $callback): IParams;
 }
