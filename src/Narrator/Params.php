@@ -35,10 +35,12 @@ class Params implements IParams
 		if (key_exists($parameter->getPosition(), $this->paramsByPosition))
 		{
 			$value = $this->paramsByPosition[$parameter->getPosition()];
+			return $this->getValue($value, $parameter);
 		}
 		else if ($type && key_exists($type, $this->paramsByType))
 		{
 			$value = $this->paramsByType[$type];
+			return $this->getValue($value, $parameter);
 		}
 		else if ($class)
 		{
@@ -48,12 +50,12 @@ class Params implements IParams
 			{
 				if (is_subclass_of($class, $subType))
 				{
-					$value = $val;
-					break;
+					return $this->getValue($val, $parameter);
 				}
 			}
 		}
-		else if (key_exists($parameter->getName(), $this->paramsByName))
+		
+		if (key_exists($parameter->getName(), $this->paramsByName))
 		{
 			$value = $this->paramsByName[$parameter->getName()];
 		}
