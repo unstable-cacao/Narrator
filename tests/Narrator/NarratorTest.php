@@ -173,6 +173,24 @@ class NarratorTest extends TestCase
 		self::assertEquals(2, $subject->invoke(function() { return 1; }));
 	}
 	
+	public function test_invoke_ObjectMethodPassed_MethodInvoked()
+	{
+		$subject = new Narrator();
+		
+		$class = new class 
+		{
+			public $isCalled = false;
+			public function callMe()
+			{
+				$this->isCalled = true;
+			}
+		};
+		
+		$subject->invoke([$class, 'callMe']);
+		
+		self::assertTrue($class->isCalled);
+	}
+	
 	public function test__invoke_CallsInvoke()
 	{
 		$subject = new Narrator();

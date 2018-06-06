@@ -125,14 +125,22 @@ class Narrator implements INarrator
 	public function invoke(callable $callback = null)
 	{
 		$callback = $this->getCallback($callback);
-		$reflection = new \ReflectionFunction($callback);
+		
+		if (is_array($callback))
+		{
+			$reflection = new \ReflectionMethod(get_class($callback[0]), $callback[1]);
+		}
+		else
+		{
+			$reflection = new \ReflectionFunction($callback);
+		}
 		
 		try
 		{
 			$this->invokeFunction($this->before);
 			
 			$params = $this->params->get($reflection->getParameters());
-			$returnedValue = $reflection->invokeArgs($params);
+			$returnedValue = call_user_func_array($callback, $params);
 			$result = $this->returnValue->get($returnedValue);
 			
 			$this->invokeFunction($this->after);
