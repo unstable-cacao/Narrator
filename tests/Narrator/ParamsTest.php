@@ -331,6 +331,18 @@ class ParamsTest extends TestCase
 		
 		self::assertEquals(4, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
 	}
+    
+    public function test_get_ParameterNotResolved_DefaultValueReturned()
+    {
+        $subject = new Params();
+        
+        $n = new class
+        {
+            public function a(int $i = 5) {}
+        };
+        
+        self::assertEquals(5, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
+    }
 	
 	
 	public function test_get_CallbackSetup_CallbackInvoked()

@@ -69,8 +69,12 @@ class Params implements IParams
 				if ($isFound)
 					return $result;
 			}
-				
-			throw new CouldNotResolveParameterException($parameter);
+			
+			if ($parameter->isOptional()) {
+			    $value = $parameter->getDefaultValue();
+            } else {
+                throw new CouldNotResolveParameterException($parameter);
+            }
 		}
 		
 		return $this->getValue($value, $parameter);
