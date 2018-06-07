@@ -2,6 +2,9 @@
 namespace Narrator;
 
 
+use Skeleton\Base\ISkeletonSource;
+
+
 interface IParams
 {
 	/**
@@ -61,6 +64,12 @@ interface IParams
 	 * @return IParams
 	 */
 	public function last($value): IParams;
+    
+    /**
+     * @param ISkeletonSource $o
+     * @return IParams
+     */
+    public function fromSkeleton(ISkeletonSource $o): IParams;
 	
 	/**
 	 * @param callable $callback

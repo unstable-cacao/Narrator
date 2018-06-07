@@ -3,6 +3,7 @@ namespace Narrator;
 
 
 use PHPUnit\Framework\TestCase;
+use Skeleton\Skeleton;
 
 
 class ParamsTest extends TestCase
@@ -342,6 +343,22 @@ class ParamsTest extends TestCase
         };
         
         self::assertEquals(5, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
+    }
+    
+    public function test_get_SkeletonExists_ReturnFromSkeleton()
+    {
+        $subject = new Params();
+        $obj = new ParamsTestHelper_A();
+        $skeleton = new Skeleton();
+        $skeleton->set(ParamsTestHelper_I1::class, $obj);
+        $subject->fromSkeleton($skeleton);
+        
+        $n = new class
+        {
+            public function a(ParamsTestHelper_I1 $i = null) {}
+        };
+        
+        self::assertEquals($obj, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
     }
 	
 	

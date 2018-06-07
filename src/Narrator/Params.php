@@ -3,6 +3,7 @@ namespace Narrator;
 
 
 use Narrator\Exceptions\CouldNotResolveParameterException;
+use Skeleton\Base\ISkeletonSource;
 
 
 class Params implements IParams
@@ -24,6 +25,9 @@ class Params implements IParams
 	
 	/** @var callable[] */
 	private $callbacks = [];
+	
+	/** @var ISkeletonSource|null */
+	private $skeleton = null;
 	
 	
 	private function getSingleParameter(\ReflectionParameter $parameter)
@@ -59,6 +63,13 @@ class Params implements IParams
 		{
 			$value = $this->paramsByName[$parameter->getName()];
 		}
+		else if ($class && $this->skeleton)
+        {
+            $val = $this->skeleton->get($class);
+            
+            if ($val)
+                return $this->getValue($val, $parameter);
+        }
 		else
 		{
 			foreach ($this->callbacks as $callback)
@@ -179,6 +190,16 @@ class Params implements IParams
 		$this->last = $value;
 		return $this;
 	}
+    
+    /**
+     * @param ISkeletonSource $o
+     * @return IParams
+     */
+	public function fromSkeleton(ISkeletonSource $o): IParams
+    {
+        $this->skeleton = $o;
+        return $this;
+    }
 	
 	/**
 	 * @param callable $callback
