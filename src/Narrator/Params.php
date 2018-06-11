@@ -4,6 +4,7 @@ namespace Narrator;
 
 use Narrator\Exceptions\CouldNotResolveParameterException;
 use Skeleton\Base\ISkeletonSource;
+use Skeleton\Exceptions\ImplementerNotDefinedException;
 
 
 class Params implements IParams
@@ -30,65 +31,135 @@ class Params implements IParams
 	private $skeleton = null;
 	
 	
+	private function tryByPosition(\ReflectionParameter $parameter, &$value): bool 
+    {
+        if (key_exists($parameter->getPosition(), $this->paramsByPosition))
+        {
+            $value = $this->paramsByPosition[$parameter->getPosition()];
+            $value = $this->getValue($value, $parameter);
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private function tryByType(\ReflectionParameter $parameter, &$value): bool
+    {
+        $type = (string)$parameter->getType();
+        
+        if ($type && key_exists($type, $this->paramsByType))
+        {
+            $value = $this->paramsByType[$type];
+            $value = $this->getValue($value, $parameter);
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private function tryBySubType(\ReflectionParameter $parameter, &$value): bool
+    {
+        $class = $parameter->getClass();
+        
+        if ($class)
+        {
+            $class = $class->getName();
+        
+            foreach ($this->paramsBySubType as $subType => $val)
+            {
+                if (is_subclass_of($class, $subType))
+                {
+                    $value = $this->getValue($val, $parameter);
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    private function tryByName(\ReflectionParameter $parameter, &$value): bool
+    {
+        if (key_exists($parameter->getName(), $this->paramsByName))
+        {
+            $value = $this->paramsByName[$parameter->getName()];
+            $value = $this->getValue($value, $parameter);
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private function tryCallback(\ReflectionParameter $parameter, &$value): bool
+    {
+        foreach ($this->callbacks as $callback)
+        {
+            $isFound = false;
+            $result = $callback($parameter, $isFound);
+        
+            if ($isFound)
+            {
+                $value = $result;
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private function tryFromSkeleton(\ReflectionParameter $parameter, &$value): bool
+    {
+        $class = $parameter->getClass();
+        
+        if ($class && $this->skeleton)
+        {
+            try
+            {
+                $value = $this->skeleton->get($class->getName());
+            }
+            catch (ImplementerNotDefinedException $e)
+            {
+                return false;
+            }
+    
+            $value = $this->getValue($value, $parameter);
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private function tryDefaultValue(\ReflectionParameter $parameter, &$value): bool
+    {
+        if ($parameter->isOptional()) 
+        {
+            $value = $parameter->getDefaultValue();
+            $value = $this->getValue($value, $parameter);
+            
+            return true;
+        }
+        
+        return false;
+    }
+	
 	private function getSingleParameter(\ReflectionParameter $parameter)
 	{
-		$value = null;
-		$type = (string)$parameter->getType();
-		$class = $parameter->getClass();
+		$result = $this->tryByPosition($parameter, $value) ||
+            $this->tryByType($parameter, $value) ||
+            $this->tryBySubType($parameter, $value) ||
+            $this->tryByName($parameter, $value) ||
+            $this->tryCallback($parameter, $value) ||
+            $this->tryFromSkeleton($parameter, $value) ||
+            $this->tryDefaultValue($parameter, $value);
 		
-		if (key_exists($parameter->getPosition(), $this->paramsByPosition))
-		{
-			$value = $this->paramsByPosition[$parameter->getPosition()];
-			return $this->getValue($value, $parameter);
-		}
-		else if ($type && key_exists($type, $this->paramsByType))
-		{
-			$value = $this->paramsByType[$type];
-			return $this->getValue($value, $parameter);
-		}
-		else if ($class)
-		{
-			$class = $class->getName();
-			
-			foreach ($this->paramsBySubType as $subType => $val)
-			{
-				if (is_subclass_of($class, $subType))
-				{
-					return $this->getValue($val, $parameter);
-				}
-			}
-		}
+		if (!$result)
+            throw new CouldNotResolveParameterException($parameter);
 		
-		if (key_exists($parameter->getName(), $this->paramsByName))
-		{
-			$value = $this->paramsByName[$parameter->getName()];
-		}
-		else if ($class && $this->skeleton)
-        {
-            $val = $this->skeleton->get($class);
-            
-            if ($val)
-                return $this->getValue($val, $parameter);
-        }
-		else
-		{
-			foreach ($this->callbacks as $callback)
-			{
-				$isFound = true;
-				$result = $callback($parameter, $isFound);
-				
-				if ($isFound)
-					return $result;
-			}
-			
-			if ($parameter->isOptional()) {
-			    $value = $parameter->getDefaultValue();
-            } else {
-                throw new CouldNotResolveParameterException($parameter);
-            }
-		}
-		
-		return $this->getValue($value, $parameter);
+		return $value;
 	}
 	
 	private function getValue($value, \ReflectionParameter $parameter)

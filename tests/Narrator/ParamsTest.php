@@ -360,6 +360,23 @@ class ParamsTest extends TestCase
         
         self::assertEquals($obj, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
     }
+    
+    /**
+     * @expectedException \Narrator\Exceptions\CouldNotResolveParameterException
+     */
+    public function test_get_SkeletonExistsButParamNotFound_ExceptionThrown()
+    {
+        $subject = new Params();
+        $skeleton = new Skeleton();
+        $subject->fromSkeleton($skeleton);
+        
+        $n = new class
+        {
+            public function a(ParamsTestHelper_I1 $i) {}
+        };
+    
+        $subject->get([new \ReflectionParameter([$n, 'a'], 'i')]);
+    }
 	
 	
 	public function test_get_CallbackSetup_CallbackInvoked()
@@ -372,9 +389,10 @@ class ParamsTest extends TestCase
 			public function a($i) {}
 		};
 		
-		$subject->addCallback(function () 
+		$subject->addCallback(function ($parameter, &$isFound) 
 			use (&$isCalled)
 			{
+                $isFound = true;
 				$isCalled = true;
 			});
 		
