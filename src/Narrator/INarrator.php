@@ -13,6 +13,13 @@ interface INarrator
 	 */
 	public function invoke(callable $callback = null);
 	
+	/**
+	 * @param object $object
+	 * @param string $method
+	 * @return mixed
+	 */
+	public function invokeMethodIfExists($object, string $method);
+	
 	public function params(): IParams;
 	public function exceptions(): IExceptions;
 	public function returnValue(): IReturnValue;

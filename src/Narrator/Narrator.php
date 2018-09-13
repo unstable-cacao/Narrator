@@ -156,6 +156,19 @@ class Narrator implements INarrator
 			$this->invokeFunction($this->always);
 		}
 	}
+	
+	/**
+	 * @param object $object
+	 * @param string $method
+	 * @return mixed
+	 */
+	public function invokeMethodIfExists($object, string $method)
+	{
+		if (!method_exists($object, $method))
+			return;
+		
+		$this->invoke([$object, $method]);
+	}
 
 	public function setCallback(callable $callback): INarrator
 	{
