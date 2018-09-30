@@ -165,9 +165,10 @@ class Narrator implements INarrator
 	public function invokeMethodIfExists($object, string $method)
 	{
 		if (!method_exists($object, $method))
+			/** @noinspection PhpInconsistentReturnPointsInspection */
 			return;
 		
-		$this->invoke([$object, $method]);
+		return $this->invoke([$object, $method]);
 	}
 
 	public function setCallback(callable $callback): INarrator
