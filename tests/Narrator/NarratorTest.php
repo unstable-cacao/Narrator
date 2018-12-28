@@ -280,6 +280,91 @@ class NarratorTest extends TestCase
 		self::assertFalse($c2->called);
 	}
 	
+	public function test_invokeMethodIfExists_NonPublicMethodWithInvoker_InvokerCalled()
+	{
+		$subject = new Narrator();
+		$c = new class { private function prv() {} };
+		$called = false;
+		
+		$subject->invokeMethodIfExists($c, 'prv', function () use (&$called) { $called = true; });
+		
+		self::assertTrue($called);
+	}
+	
+	public function test_invokeMethodIfExists_NonPublicMethodWithInvoker_InvokerCalledWithArgs()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('a', 1);
+		$c = new class { private function prv($a) {} };
+		$param = null;
+		
+		$subject->invokeMethodIfExists($c, 'prv', function ($a) use (&$param) { $param = $a; });
+		
+		self::assertEquals(1, $param);
+	}
+	
+	public function test_invokeMethodIfExists_MethodNotExistWithInvoker_InvokerNotCalled()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('a', 1);
+		$c = new class {};
+		$called = false;
+		
+		$subject->invokeMethodIfExists($c, 'notFound', function () use (&$called) { $called = true; });
+		
+		self::assertFalse($called);
+	}
+	
+	
+	public function test_invokeIfExists_CallableExists_Invoke()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('a', 1);
+		$called = false;
+		
+		$subject->invokeIfExists(function() use (&$called) { $called = true; });
+		
+		self::assertTrue($called);
+	}
+	
+	public function test_invokeIfExists_CallableNotExists_CallableNotInvoked()
+	{
+		$subject = new Narrator();
+		
+		$subject->invokeIfExists('asdas' . rand(0, 1000));
+	}
+	
+	public function test_invokeIfExists_CallableExistsAndInvokerPassed_InvokerCalled()
+	{
+		$subject = new Narrator();
+		$called = false;
+		
+		$subject->invokeIfExists(function() {}, function() use (&$called) { $called = true; });
+		
+		self::assertTrue($called);
+	}
+	
+	public function test_invokeIfExists_CallableNotExistsAndInvokerPassed_InvokerCalled()
+	{
+		$subject = new Narrator();
+		$called = false;
+		
+		$subject->invokeIfExists('asdas' . rand(0, 1000), function() use (&$called) { $called = true; });
+		
+		self::assertFalse($called);
+	}
+	
+	public function test_invokeIfExists_CallableExistsAndInvokerPassed_InvokerCalledWithArgs()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('a', 1);
+		$param = false;
+		
+		$subject->invokeIfExists(function($a) {}, function($p) use (&$param) { $param = $p; });
+		
+		self::assertEquals(1, $param);
+	}
+	
 	
 	public function test__clone_ClonesMembers()
 	{

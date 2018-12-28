@@ -29,7 +29,11 @@ class Narrator implements INarrator
 	private $always = null;
 	
 	
-	private function getCallback(?callable $callback = null): callable 
+	/**
+	 * @param callable|mixed|null $callback
+	 * @return callable|mixed|null
+	 */
+	private function getCallback($callback = null) 
 	{
 		if ($callback)
 			return $callback;
@@ -123,7 +127,7 @@ class Narrator implements INarrator
 	 * @param callable|null $invoker
 	 * @return mixed
 	 */
-	public function invoke(?callable $callback = null, ?callable $invoker = null)
+	public function invoke($callback = null, ?callable $invoker = null)
 	{
 		$callback = $this->getCallback($callback);
 		
@@ -158,18 +162,43 @@ class Narrator implements INarrator
 		}
 	}
 	
+	
 	/**
-	 * @param object $object
-	 * @param string $method
+	 * @param mixed $callable
 	 * @return mixed
 	 */
-	public function invokeMethodIfExists($object, string $method)
+	public function invokeIfExists($callable = null, ?callable $invoker = null)
 	{
-		if (!method_exists($object, $method) || !is_callable([$object, $method]))
+		if (!is_callable($callable))
 			/** @noinspection PhpInconsistentReturnPointsInspection */
 			return;
 		
-		return $this->invoke([$object, $method]);
+		return $this->invoke($callable, $invoker);
+	}
+	
+	/**
+	 * @param object $object
+	 * @param string $method
+	 * @param callable|null $invoker
+	 * @return mixed
+	 */
+	public function invokeMethodIfExists($object, string $method, ?callable $invoker = null)
+	{
+		if ($invoker)
+		{
+			if (method_exists($object, $method))
+			{
+				return $this->invoke([$object, $method], $invoker);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		else
+		{
+			return $this->invokeIfExists([$object, $method]);
+		}
 	}
 
 	public function setCallback(callable $callback): INarrator

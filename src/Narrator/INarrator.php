@@ -12,7 +12,7 @@ interface INarrator
 	 * @param callable|null $invoker
 	 * @return mixed
 	 */
-	public function invoke(?callable $callback = null, ?callable $invoker = null);
+	public function invoke($callback = null, ?callable $invoker = null);
 	
 	/**
 	 * @param object $object
