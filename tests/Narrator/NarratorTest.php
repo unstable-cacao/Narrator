@@ -191,7 +191,35 @@ class NarratorTest extends TestCase
 		self::assertTrue($class->isCalled);
 	}
 	
-	public function test__invoke_CallsInvoke()
+	public function test_invoke_InvokerMethodProvided_InvokerCalled()
+	{
+		$isInvoked = false;
+		$subject = new Narrator();
+		
+		$subject->invoke(
+			function () {},
+			function () use (&$isInvoked) { $isInvoked = true; }
+		);
+		
+		self::assertTrue($isInvoked);
+	}
+	
+	public function test_invoke_InvokerMethodProvided_ParamsPassedToInvokeMethod()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('a', 1);
+		$subject->params()->byName('b', 2);
+		
+		$subject->invoke(
+			function ($a) {},
+			function ($b) use (&$param) { $param = $b; }
+		);
+		
+		self::assertEquals(1, $param);
+	}
+	
+	
+	public function test_invoke_CallsInvoke()
 	{
 		$subject = new Narrator();
 		$isCalled = false;
@@ -200,6 +228,58 @@ class NarratorTest extends TestCase
 		
 		self::assertTrue($isCalled);
 	}
+	
+	
+	public function test_invokeMethodIfExists_MethodFound_MethodInvoked()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('b', 2);
+		
+		$c = new class 
+		{
+			public function d($b) { return $b; }
+		};
+		
+		$res = $subject->invokeMethodIfExists($c, 'd');
+		
+		
+		self::assertEquals($res, 2);
+	}
+	
+	public function test_invokeMethodIfExists_MethodNotFound_NoExceptionThrown()
+	{
+		$subject = new Narrator();
+		$c = new class {};
+		
+		$res = $subject->invokeMethodIfExists($c, 'notFound');
+		
+		
+		self::assertNull($res);
+	}
+	
+	public function test_invokeMethodIfExists_NonPublicMethodFound_NoExceptionThrown()
+	{
+		$subject = new Narrator();
+		
+		$c1 = new class 
+		{
+			public $called = false;
+			protected function call() { $this->called = true; }
+		};
+		
+		$c2 = new class 
+		{
+			public $called = false;
+			private function call() { $this->called = true; }
+		};
+		
+		$subject->invokeMethodIfExists($c1, 'call');
+		$subject->invokeMethodIfExists($c2, 'call');
+		
+		self::assertFalse($c1->called);
+		self::assertFalse($c2->called);
+	}
+	
 	
 	public function test__clone_ClonesMembers()
 	{

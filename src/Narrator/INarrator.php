@@ -6,12 +6,13 @@ interface INarrator
 {
 	public function __clone();
 	public function __invoke();
-
+	
 	/**
 	 * @param callable|null $callback
+	 * @param callable|null $invoker
 	 * @return mixed
 	 */
-	public function invoke(callable $callback = null);
+	public function invoke(?callable $callback = null, ?callable $invoker = null);
 	
 	/**
 	 * @param object $object

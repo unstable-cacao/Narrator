@@ -120,9 +120,10 @@ class Narrator implements INarrator
 
 	/**
 	 * @param callable|null $callback
+	 * @param callable|null $invoker
 	 * @return mixed
 	 */
-	public function invoke(callable $callback = null)
+	public function invoke(?callable $callback = null, ?callable $invoker = null)
 	{
 		$callback = $this->getCallback($callback);
 		
@@ -140,7 +141,7 @@ class Narrator implements INarrator
 			$this->invokeFunction($this->before);
 			
 			$params = $this->params->get($reflection->getParameters());
-			$returnedValue = call_user_func_array($callback, $params);
+			$returnedValue = call_user_func_array($invoker ?: $callback, $params);
 			$result = $this->returnValue->get($returnedValue);
 			
 			$this->invokeFunction($this->after);
@@ -164,7 +165,7 @@ class Narrator implements INarrator
 	 */
 	public function invokeMethodIfExists($object, string $method)
 	{
-		if (!method_exists($object, $method))
+		if (!method_exists($object, $method) || !is_callable([$object, $method]))
 			/** @noinspection PhpInconsistentReturnPointsInspection */
 			return;
 		
