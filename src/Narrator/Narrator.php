@@ -131,7 +131,11 @@ class Narrator implements INarrator
 	{
 		$callback = $this->getCallback($callback);
 		
-		if (is_array($callback))
+		if ($callback instanceof \ReflectionFunctionAbstract)
+		{
+			$reflection = $callback;
+		}
+		else if (is_array($callback))
 		{
 			$reflection = new \ReflectionMethod(get_class($callback[0]), $callback[1]);
 		}
