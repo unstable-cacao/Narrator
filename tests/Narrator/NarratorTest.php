@@ -243,7 +243,6 @@ class NarratorTest extends TestCase
 		self::assertTrue($isCalled);
 	}
 	
-	
 	public function test_invoke_CallsInvoke()
 	{
 		$subject = new Narrator();
@@ -388,6 +387,62 @@ class NarratorTest extends TestCase
 		$subject->invokeIfExists(function($a) {}, function($p) use (&$param) { $param = $p; });
 		
 		self::assertEquals(1, $param);
+	}
+	
+	
+	public function test_invokeCreateInstance_NoConstructor_NewInstanceReturned()
+	{
+		$subject = new Narrator();
+		$class = new class {};
+		
+		$inst = $subject->invokeCreateInstance(get_class($class));
+		
+		self::assertInstanceOf(get_class($class), $inst);
+	}
+	
+	public function test_invokeCreateInstance_ReflectionClassPassed_NewInstanceReturned()
+	{
+		$subject = new Narrator();
+		$class = new class {};
+		
+		$inst = $subject->invokeCreateInstance(new \ReflectionClass($class));
+		
+		self::assertInstanceOf(get_class($class), $inst);
+	}
+	
+	public function test_invokeCreateInstance_ClassHasConstructor_ConstructorInvoked()
+	{
+		$subject = new Narrator();
+		$class = new class {
+			public $a = 0;
+			public function __construct()
+			{
+				$this->a = 1;
+			}
+		};
+		
+		$inst = $subject->invokeCreateInstance(new \ReflectionClass($class));
+		
+		self::assertEquals(1, $inst->a);
+	}
+	
+	public function test_invokeCreateInstance_ConstructorHasArgs_ArgsPassed()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('a', 1);
+		$subject->params()->byName('b', 2);
+		
+		$class = new class {
+			public $prms;
+			public function __construct($a = 0, $b = 2)
+			{
+				$this->prms = [$a, $b];
+			}
+		};
+		
+		$inst = $subject->invokeCreateInstance(new \ReflectionClass($class));
+		
+		self::assertEquals([1, 2], $inst->prms);
 	}
 	
 	

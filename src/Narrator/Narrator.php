@@ -219,6 +219,31 @@ class Narrator implements INarrator
 			return $this->invokeIfExists([$object, $method]);
 		}
 	}
+	
+	/**
+	 * @param string|\ReflectionClass $class
+	 * @return object
+	 */
+	public function invokeCreateInstance($class)
+	{
+		if (is_string($class))
+			$class = new \ReflectionClass($class);
+		
+		if (!$class->hasMethod('__construct'))
+			return $class->newInstance();
+		
+		$instance = $class->newInstanceWithoutConstructor();
+		
+		return $this->invoke(
+			$class->getConstructor(),
+			function ()
+				use ($instance)
+			{
+				$callback = [$instance, '__construct'];
+				call_user_func_array($callback, func_get_args());
+				return $instance;
+			});
+	}
 
 	public function setCallback(callable $callback): INarrator
 	{

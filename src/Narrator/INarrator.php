@@ -21,6 +21,12 @@ interface INarrator
 	 */
 	public function invokeMethodIfExists($object, string $method);
 	
+	/**
+	 * @param string|\ReflectionClass $class
+	 * @return object
+	 */
+	public function invokeCreateInstance($class);
+	
 	public function params(): IParams;
 	public function exceptions(): IExceptions;
 	public function returnValue(): IReturnValue;
