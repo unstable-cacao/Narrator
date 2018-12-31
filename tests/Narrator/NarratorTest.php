@@ -218,6 +218,20 @@ class NarratorTest extends TestCase
 		self::assertEquals(1, $param);
 	}
 	
+	public function test_invoke_InvokerReflectionMethodProvided_ParamsPassedToInvokeMethod()
+	{
+		$subject = new Narrator();
+		$subject->params()->byName('a', 1);
+		$subject->params()->byName('b', 2);
+		
+		$subject->invoke(
+			function ($a, $b) {},
+			new \ReflectionFunction(function (...$arg) use (&$param) { $param = $arg; })
+		);
+		
+		self::assertEquals([1, 2], $param);
+	}
+	
 	public function test_invoke_ReflectionPassed_MethodInvoked()
 	{
 		$subject = new Narrator();

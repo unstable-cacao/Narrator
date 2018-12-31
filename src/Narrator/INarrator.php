@@ -8,11 +8,11 @@ interface INarrator
 	public function __invoke();
 	
 	/**
-	 * @param callable|null $callback
-	 * @param callable|null $invoker
+	 * @param callable|\ReflectionFunctionAbstract|null $callback
+	 * @param callable|\ReflectionFunction|null $invoker
 	 * @return mixed
 	 */
-	public function invoke($callback = null, ?callable $invoker = null);
+	public function invoke($callback = null, $invoker = null);
 	
 	/**
 	 * @param object $object
