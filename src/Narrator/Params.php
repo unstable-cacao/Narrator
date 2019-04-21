@@ -164,7 +164,7 @@ class Params implements IParams
 	
 	private function getValue($value, \ReflectionParameter $parameter)
 	{
-		return is_callable($value) ? $value($parameter) : $value;
+		return (is_callable($value) && !is_string($value)) ? $value($parameter) : $value;
 	}
 	
 

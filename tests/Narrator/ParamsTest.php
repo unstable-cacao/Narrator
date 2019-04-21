@@ -56,6 +56,18 @@ class ParamsTest extends TestCase
 		
 		self::assertEquals(1, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
 	}
+    
+    public function test_get_ValueStringNameOfCallback_CallbackNotCalled()
+    {
+        $subject = new Params();
+        $subject->first('ucfirst');
+        $n = new class
+        {
+            public function a(string $val) {}
+        };
+        
+        self::assertEquals('ucfirst', $subject->get([new \ReflectionParameter([$n, 'a'], 'val')])[0]);
+    }
 	
 	public function test_get_ParameterByPositionAtFirstIndex_CallbacksValueReturned()
 	{
