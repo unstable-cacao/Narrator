@@ -30,12 +30,11 @@ class ParamsTest extends TestCase
 		
 		self::assertEmpty($subject->get([]));
 	}
-
-	/**
-	 * @expectedException \Narrator\Exceptions\CouldNotResolveParameterException
-	 */
+	
 	public function test_get_ParameterNotFound_ExceptionThrown()
 	{
+		$this->expectException(\Narrator\Exceptions\CouldNotResolveParameterException::class);
+		
 		$subject = new Params();
 		$n = new class
 		{
@@ -372,13 +371,12 @@ class ParamsTest extends TestCase
         
         self::assertEquals($obj, $subject->get([new \ReflectionParameter([$n, 'a'], 'i')])[0]);
     }
-    
-    /**
-     * @expectedException \Narrator\Exceptions\CouldNotResolveParameterException
-     */
-    public function test_get_SkeletonExistsButParamNotFound_ExceptionThrown()
+	
+	public function test_get_SkeletonExistsButParamNotFound_ExceptionThrown()
     {
-        $subject = new Params();
+		$this->expectException(\Narrator\Exceptions\CouldNotResolveParameterException::class);
+		
+		$subject = new Params();
         $skeleton = new Skeleton();
         $subject->fromSkeleton($skeleton);
         

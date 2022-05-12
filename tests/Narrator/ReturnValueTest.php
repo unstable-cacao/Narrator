@@ -23,12 +23,11 @@ class ReturnValueTest extends TestCase
 		self::assertEquals($subject, $subject->float(1));
 		self::assertEquals($subject, $subject->null(1));
 	}
-
-	/**
-	 * @expectedException \Narrator\Exceptions\NotAScalarException
-	 */
+	
 	public function test_get_ValueObjectByValue_ExceptionThrown()
 	{
+		$this->expectException(\Narrator\Exceptions\NotAScalarException::class);
+		
 		$subject = new ReturnValue();
 		$subject->byValue(new \stdClass(), 1);
 	}

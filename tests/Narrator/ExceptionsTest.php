@@ -17,12 +17,11 @@ class ExceptionsTest extends TestCase
 		self::assertEquals($subject, $subject->byTypes([]));
 		self::assertEquals($subject, $subject->defaultHandler(function() {}));
 	}
-
-	/**
-	 * @expectedException \Exception
-	 */
+	
 	public function test_handle_NoHandlerFound_ExceptionRethrown()
 	{
+		$this->expectException(\Exception::class);
+		
 		$subject = new Exceptions();
 		$subject->handle(new \Exception());
 	}
