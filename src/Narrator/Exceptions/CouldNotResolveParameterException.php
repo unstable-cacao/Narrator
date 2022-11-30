@@ -8,7 +8,15 @@ class CouldNotResolveParameterException extends NarratorException
 	{
 		$index = $parameter->getPosition();
 		
-		parent::__construct("Could not resolve parameter {$parameter->getName()} at position $index, " . 
-			"method {$parameter->getDeclaringFunction()->getName()}");
+		$method = $parameter->getDeclaringFunction();
+		$methodName = $method->getName();
+		
+		if ($method instanceof \ReflectionMethod)
+		{
+			$methodName = $method->getDeclaringClass()->getName() . '::' . $methodName;
+		}
+		
+		parent::__construct("Could not resolve parameter {$parameter->getName()} at position $index, " .
+			"method $methodName");
 	}
 }

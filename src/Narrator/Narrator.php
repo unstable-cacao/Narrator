@@ -15,7 +15,7 @@ class Narrator implements INarrator
 	
 	/** @var IReturnValue */
 	private $returnValue = null;
-
+	
 	/** @var callable|null */
 	private $callback = null;
 	
@@ -33,7 +33,7 @@ class Narrator implements INarrator
 	 * @param callable|mixed|null $callback
 	 * @return callable|mixed|null
 	 */
-	private function getCallback($callback = null) 
+	private function getCallback($callback = null)
 	{
 		if ($callback)
 			return $callback;
@@ -121,7 +121,7 @@ class Narrator implements INarrator
 		$this->always = $callback;
 		return $this;
 	}
-
+	
 	private function executeInvoke($callback, $invoker, array $params)
 	{
 		if ($invoker)
@@ -130,6 +130,10 @@ class Narrator implements INarrator
 		if ($callback instanceof \ReflectionFunction)
 		{
 			return $callback->invokeArgs($params);
+		}
+		else if ($callback instanceof \ReflectionFunctionAbstract)
+		{
+			return $callback->invokeArgs(null, $params);
 		}
 		else
 		{
@@ -237,14 +241,14 @@ class Narrator implements INarrator
 		return $this->invoke(
 			$class->getConstructor(),
 			function ()
-				use ($instance)
+			use ($instance)
 			{
 				$callback = [$instance, '__construct'];
 				call_user_func_array($callback, func_get_args());
 				return $instance;
 			});
 	}
-
+	
 	public function setCallback(callable $callback): INarrator
 	{
 		$this->callback = $callback;
